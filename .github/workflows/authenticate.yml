@@ -1,0 +1,28 @@
+name: Authenticate with Cloudsmith
+
+on:
+  workflow_dispatch:  # Manual trigger
+  push:
+    branches: [ main ]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  auth:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Authenticate with Cloudsmith via OIDC
+        uses: cloudsmith-io/cloudsmith-cli-action@v1.0.3
+        with:
+          oidc-namespace: '${{ vars.CLOUDSMITH_NAMESPACE }}' # Your Cloudsmith workspace
+          oidc-service-slug: '${{ vars.CLOUDSMITH_SERVICE_SLUG }}' # Your Cloudsmith service account slug
+          oidc-auth-only: 'true' # Ensures the action only performs authentication
+          
+      - name: Save Cloudsmith Token
+        run: |
+          echo "CLOUDSMITH_API_KEY=$CLOUDSMITH_API_KEY" >> $GITHUB_ENV
