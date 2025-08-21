@@ -23,7 +23,7 @@ jobs:
         uses: cloudsmith-io/cloudsmith-cli-action@v1.0.3
         with:
           oidc-namespace: '${{ vars.CLOUDSMITH_NAMESPACE }} '           # Replace with your Cloudsmith workspace
-          oidc-service-slug: '${{ vars.CLOUDSMITH_OIDC_SLUG }}' # Replace with your service account slug
+          oidc-service-slug: '${{ vars.CLOUDSMITH_SERVICE_SLUG }}' # Replace with your service account slug
           oidc-auth-only: 'false'
       - name: Push package to Cloudsmith
         run: |
