@@ -1,0 +1,30 @@
+name: Push Python package to Cloudsmith
+on:
+  workflow_run:
+    workflows: ["Build Python Package"]
+    types:
+      - completed
+      
+permissions:
+  id-token: write # Required to request the OIDC token from GitHub
+  contents: read  # Required for actions/checkout to read the repository
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    name: Push Python package to Cloudsmith using OIDC
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      # This step handles the entire OIDC authentication flow automatically.
+      # It gets a token from GitHub and exchanges it for a Cloudsmith token.
+      - name: Authenticate with Cloudsmith via OIDC
+        uses: cloudsmith-io/cloudsmith-cli-action@v1.0.3
+        with:
+          oidc-namespace: '${{ vars.CLOUDSMITH_OIDC_SLUG }}'           # Replace with your Cloudsmith workspace
+          oidc-service-slug: '${{ vars.CLOUDSMITH_NAMESPACE }}' # Replace with your service account slug
+          oidc-auth-only: 'false'
+      - name: Push package to Cloudsmith
+        run: |
+          cloudsmith push python ${{ vars.CLOUDSMITH_NAMESPACE }}/${{ vars.CLOUDSMITH_REPO }} dist/*.whl
