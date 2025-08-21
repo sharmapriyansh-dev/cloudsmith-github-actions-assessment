@@ -24,5 +24,6 @@ jobs:
 
       - name: Build package
         run: |
+          cd calculator-app/
           python -m build
           ls -l dist/   # verify output
