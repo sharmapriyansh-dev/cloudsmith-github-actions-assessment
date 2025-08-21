@@ -22,8 +22,8 @@ jobs:
       - name: Authenticate with Cloudsmith via OIDC
         uses: cloudsmith-io/cloudsmith-cli-action@v1.0.3
         with:
-          oidc-namespace: '${{ vars.CLOUDSMITH_OIDC_SLUG }}'           # Replace with your Cloudsmith workspace
-          oidc-service-slug: '${{ vars.CLOUDSMITH_NAMESPACE }}' # Replace with your service account slug
+          oidc-namespace: '${{ vars.CLOUDSMITH_NAMESPACE }} '           # Replace with your Cloudsmith workspace
+          oidc-service-slug: '${{ vars.CLOUDSMITH_OIDC_SLUG }}' # Replace with your service account slug
           oidc-auth-only: 'false'
       - name: Push package to Cloudsmith
         run: |
