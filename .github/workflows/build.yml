@@ -27,3 +27,9 @@ jobs:
           cd calculator-app/
           python -m build
           ls -l dist/   # verify output
+      
+      - name: Upload built package
+        uses: actions/upload-artifact@v5
+        with:
+          name: dist
+          path: dist/*.whl
