@@ -25,6 +25,12 @@ jobs:
           oidc-namespace: '${{ vars.CLOUDSMITH_NAMESPACE }} '           # Replace with your Cloudsmith workspace
           oidc-service-slug: '${{ vars.CLOUDSMITH_SERVICE_SLUG }}' # Replace with your service account slug
           oidc-auth-only: 'false'
+
+      - name: Download dist artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: python-dist
+
       - name: Push package to Cloudsmith
         run: |
           cloudsmith push python ${{ vars.CLOUDSMITH_NAMESPACE }}/${{ vars.CLOUDSMITH_REPO }} calculator-app/dist/*.whl
