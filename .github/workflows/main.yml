@@ -1,7 +1,9 @@
+name: Build and Publish Python Package to Cloudsmith
+
 on:
-  workflow_dispatch:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 permissions:
   id-token: write
@@ -40,8 +42,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install build tools
-        run: |
-          pip install build
+        run: pip install build
 
       - name: Build package
         run: |
@@ -49,19 +50,48 @@ jobs:
           python -m build
           ls -l dist/
 
-  publish:
+      - name: Find Package Files
+        run: |
+          cd calculator-app/dist
+          echo "WHEEL_FILE=$(ls *.whl)" >> $GITHUB_ENV
+          echo "SDIST_FILE=$(ls *.tar.gz)" >> $GITHUB_ENV
+          echo "Discovered wheel: $WHEEL_FILE"
+          echo "Discovered sdist: $SDIST_FILE"
+
+  publish-whl:
     runs-on: ubuntu-latest
-    name: Publish Python package to Cloudsmith
+    name: Publish Python Wheel to Cloudsmith
     needs: build
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Cloudsmith CLI
-        run: pip install --upgrade cloudsmith-cli
+      - name: Publish wheel
+        uses: cloudsmith-io/action@v0.5.3
+        with:
+          api-key: ${{ env.CLOUDSMITH_API_KEY }}
+          command: "push"
+          format: "python"
+          owner: "${{ vars.CLOUDSMITH_NAMESPACE }}"
+          repo: "${{ vars.CLOUDSMITH_REPO }}"
+          file: "calculator-app/dist/${{ env.WHEEL_FILE }}"
+          republish: "true"
 
-      - name: Push package to Cloudsmith
-        run: |
-          cloudsmith push python \
-            ${{ vars.CLOUDSMITH_NAMESPACE }}/${{ vars.CLOUDSMITH_REPO }} \
-             calculator-app/dist/*.whl
+  publish-tar:
+    runs-on: ubuntu-latest
+    name: Publish Python Source Distribution to Cloudsmith
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Publish sdist
+        uses: cloudsmith-io/action@v0.5.3
+        with:
+          api-key: ${{ env.CLOUDSMITH_API_KEY }}
+          command: "push"
+          format: "python"
+          owner: "${{ vars.CLOUDSMITH_NAMESPACE }}"
+          repo: "${{ vars.CLOUDSMITH_REPO }}"
+          file: "calculator-app/dist/${{ env.SDIST_FILE }}"
+          republish: "true"
