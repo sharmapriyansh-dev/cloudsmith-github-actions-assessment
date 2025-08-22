@@ -1,5 +1,5 @@
 on:
-  workflow_dispatch:  # Manual trigger
+  workflow_dispatch:
   push:
     branches: [ main ]
 
@@ -49,12 +49,6 @@ jobs:
           python -m build
           ls -l dist/
 
-      - name: Upload dist artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-dist
-          path: calculator-app/dist/*
-
   publish:
     runs-on: ubuntu-latest
     name: Publish Python package to Cloudsmith
@@ -66,13 +60,8 @@ jobs:
       - name: Install Cloudsmith CLI
         run: pip install --upgrade cloudsmith-cli
 
-      - name: Download dist artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: python-dist
-
       - name: Push package to Cloudsmith
         run: |
           cloudsmith push python \
             ${{ vars.CLOUDSMITH_NAMESPACE }}/${{ vars.CLOUDSMITH_REPO }} \
-            python-dist/*.whl
+             calculator-app/dist/*.whl
