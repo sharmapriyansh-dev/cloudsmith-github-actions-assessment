@@ -27,10 +27,10 @@ jobs:
       - name: Save Cloudsmith Token
         run: |
           echo "CLOUDSMITH_API_KEY=$CLOUDSMITH_API_KEY" >> $GITHUB_ENV
-
-  build:
+          
+  build-and-publish:
     runs-on: ubuntu-latest
-    name: Build Python package
+    name: Build and Publish Python Package
     needs: auth
     steps:
       - name: Checkout repository
@@ -50,23 +50,7 @@ jobs:
           python -m build
           ls -l dist/
 
-      - name: Find Package Files
-        run: |
-          cd calculator-app/dist
-          echo "WHEEL_FILE=$(ls *.whl)" >> $GITHUB_ENV
-          echo "SDIST_FILE=$(ls *.tar.gz)" >> $GITHUB_ENV
-          echo "Discovered wheel: $WHEEL_FILE"
-          echo "Discovered sdist: $SDIST_FILE"
-
-  publish-whl:
-    runs-on: ubuntu-latest
-    name: Publish Python Wheel to Cloudsmith
-    needs: build
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Publish wheel
+      - name: Publish wheel (.whl) to Cloudsmith
         uses: cloudsmith-io/action@v0.5.3
         with:
           api-key: ${{ env.CLOUDSMITH_API_KEY }}
@@ -74,18 +58,10 @@ jobs:
           format: "python"
           owner: "${{ vars.CLOUDSMITH_NAMESPACE }}"
           repo: "${{ vars.CLOUDSMITH_REPO }}"
-          file: "calculator-app/dist/${{ env.WHEEL_FILE }}"
+          file: "calculator-app/dist/*.whl"
           republish: "true"
 
-  publish-tar:
-    runs-on: ubuntu-latest
-    name: Publish Python Source Distribution to Cloudsmith
-    needs: build
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Publish sdist
+      - name: Publish source distribution (.tar.gz) to Cloudsmith
         uses: cloudsmith-io/action@v0.5.3
         with:
           api-key: ${{ env.CLOUDSMITH_API_KEY }}
@@ -93,5 +69,5 @@ jobs:
           format: "python"
           owner: "${{ vars.CLOUDSMITH_NAMESPACE }}"
           repo: "${{ vars.CLOUDSMITH_REPO }}"
-          file: "calculator-app/dist/${{ env.SDIST_FILE }}"
+          file: "calculator-app/dist/*.tar.gz"
           republish: "true"
