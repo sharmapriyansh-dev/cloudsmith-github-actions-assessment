@@ -1,0 +1,75 @@
+on:
+  workflow_dispatch:  # Manual trigger
+  push:
+    branches: [ main ]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  auth:
+    runs-on: ubuntu-latest
+    name: Authenticate with Cloudsmith
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Authenticate with Cloudsmith via OIDC
+        uses: cloudsmith-io/cloudsmith-cli-action@v1.0.3
+        with:
+          oidc-namespace: '${{ vars.CLOUDSMITH_NAMESPACE }}'
+          oidc-service-slug: '${{ vars.CLOUDSMITH_SERVICE_SLUG }}'
+          oidc-auth-only: 'true'
+          
+      - name: Save Cloudsmith Token
+        run: |
+          echo "CLOUDSMITH_API_KEY=$CLOUDSMITH_API_KEY" >> $GITHUB_ENV
+
+  build:
+    runs-on: ubuntu-latest
+    name: Build Python package
+    needs: auth
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install build tools
+        run: |
+          pip install build
+
+      - name: Build package
+        run: |
+          cd calculator-app/
+          python -m build
+          ls -l dist/
+
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-dist
+          path: calculator-app/dist/*
+
+  publish:
+    runs-on: ubuntu-latest
+    name: Publish Python package to Cloudsmith
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download dist artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: python-dist
+
+      - name: Push package to Cloudsmith
+        run: |
+          cloudsmith push python \
+            ${{ vars.CLOUDSMITH_NAMESPACE }}/${{ vars.CLOUDSMITH_REPO }} \
+            python-dist/*.whl
