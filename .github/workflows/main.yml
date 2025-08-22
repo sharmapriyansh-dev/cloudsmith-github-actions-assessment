@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Authenticate with Cloudsmith
     steps:
+      - id: auth-step
       - name: Checkout code
         uses: actions/checkout@v4
       
@@ -53,7 +54,7 @@ jobs:
       - name: Publish wheel (.whl) to Cloudsmith
         uses: cloudsmith-io/action@v0.5.3
         with:
-          api-key: ${{ env.CLOUDSMITH_API_KEY }}
+          api-key: ${{ needs.auth.outputs.api_key }}
           command: "push"
           format: "python"
           owner: "${{ vars.CLOUDSMITH_NAMESPACE }}"
@@ -64,7 +65,7 @@ jobs:
       - name: Publish source distribution (.tar.gz) to Cloudsmith
         uses: cloudsmith-io/action@v0.5.3
         with:
-          api-key: ${{ env.CLOUDSMITH_API_KEY }}
+          api-key: ${{ needs.auth.outputs.api_key }}
           command: "push"
           format: "python"
           owner: "${{ vars.CLOUDSMITH_NAMESPACE }}"
