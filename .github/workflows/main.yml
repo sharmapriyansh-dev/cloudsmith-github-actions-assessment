@@ -14,7 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Authenticate with Cloudsmith
     steps:
-      - id: auth-step
       - name: Checkout code
         uses: actions/checkout@v4
       
