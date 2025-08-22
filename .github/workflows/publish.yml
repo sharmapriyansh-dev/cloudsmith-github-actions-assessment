@@ -27,4 +27,4 @@ jobs:
           oidc-auth-only: 'false'
       - name: Push package to Cloudsmith
         run: |
-          cloudsmith push python ${{ vars.CLOUDSMITH_NAMESPACE }}/${{ vars.CLOUDSMITH_REPO }} dist/*.whl
+          cloudsmith push python ${{ vars.CLOUDSMITH_NAMESPACE }}/${{ vars.CLOUDSMITH_REPO }} calculator-app/dist/*.whl
